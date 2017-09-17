@@ -17,8 +17,6 @@ import PyQt5.QtCore as QtCore
 
 class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
-
-
     def __init__(self):
         #Matplotlib
         self.canvas = None
@@ -31,6 +29,11 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.fig = Figure()
         #Setup Canvas
         self.setupCanvas()
+        # List
+        l = ('Schnitt', 'Linker Rand', 'Linker Graben', 'Mitte', 'Rechter Graben', 'Rechter Rand')
+        self.data_table_x = pd.DataFrame(columns=l)
+        self.data_table_y = pd.DataFrame(columns=l)
+
 
         #Connect
         self.ladenpushButton.pressed.connect(self.on_laden)
@@ -42,6 +45,29 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.order2Slider.valueChanged.connect(self.canvas.setFilterOrder2)
         self.width3Slider.valueChanged.connect(self.canvas.setFilterWidth3)
         self.order3Slider.valueChanged.connect(self.canvas.setFilterOrder3)
+        self.addpushButton.pressed.connect(self.on_add)
+        self.savepushButton.pressed.connect(self.on_save)
+
+    def on_save(self):
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Speichere Datensatz', '~/Dokumente/GitHub')
+
+        ew = pd.ExcelWriter(fname[0]+'.xlsx')
+        self.data_table_x.to_excel(ew, 'X Schnitt')
+        self.data_table_y.to_excel(ew, 'Y Schnitt')
+        ew.save()
+        ew.close()
+
+    def on_add(self):
+        xschnitt = self.canvas.rowplot
+        yschnitt = self.canvas.colplot
+        la, lg, m, rg, rr = self.canvas.maximar[0],self.canvas.maximar[1],self.canvas.maximar[2],self.canvas.maximar[3],self.canvas.maximar[4]
+        data = [xschnitt, la, lg, m, rg, rr]
+        self.data_table_x.loc[len(self.data_table_x)] = data
+        la, lg, m, rg, rr = self.canvas.maximac[0], self.canvas.maximac[1], self.canvas.maximac[2], self.canvas.maximac[3], self.canvas.maximac[4]
+        data = [yschnitt, la, lg, m, rg, rr]
+        self.data_table_y.loc[len(self.data_table_y)] = data
+        print(self.data_table_x)
+
 
     def updateLW2(self, m):
         self.labelWidth2.setText(str(m))
@@ -98,9 +124,10 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if line.find('#') is not -1 and headerend is not None:
                 fileend = linenumber
 
+        searchfile.close()
         # Damit ist bekannt, wie lange der Header ist, beginnend bei Null
 
-        rdata = pd.read_table("Mask.txt", header=headerend, nrows=fileend - headerend - 2, sep="\s+")
+        rdata = pd.read_table(fname[0], header=headerend, nrows=fileend - headerend - 2, sep="\s+")
         del rdata[rdata.columns[-1]]
         rdata.columns = ["X", "Y", "Z"]
         rdata = rdata.replace(to_replace={"Z" : {"No" : 0}})

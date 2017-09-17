@@ -127,9 +127,6 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
             else:
                 self.draggablec = None
 
-
-
-
         if event.button == 3:
             x = event.x
             y = event.y
@@ -289,8 +286,6 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
             self.refreshSanchezArtists()
 
 
-
-
     def on_motion(self, event):
         if not event.inaxes:
             return
@@ -298,9 +293,10 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         if self.draggabler is not None:
             if event.xdata and event.ydata:
                 xdatar, ydatar = self.markersr.get_data()
-                xindexr = np.argmin(np.abs(self.line2[0].get_xdata()- event.xdata))
+                xindexr = np.argmin(np.abs(self.line2[0].get_xdata() - event.xdata))
                 ydatar[self.draggabler] = self.line2[0].get_ydata()[xindexr]
                 xdatar[self.draggabler] = self.line2[0].get_xdata()[xindexr]
+                self.maximar[self.draggabler] = self.line2[0].get_xdata()[xindexr]
                 self.markersr.set_xdata(xdatar)
                 self.markersr.set_ydata(ydatar)
                 self.restore_region(self.backgroundr)
@@ -312,6 +308,7 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
                 xindexc = np.argmin(np.abs(self.line3[0].get_xdata() - event.xdata))
                 ydatac[self.draggablec] = self.line3[0].get_ydata()[xindexc]
                 xdatac[self.draggablec] = self.line3[0].get_xdata()[xindexc]
+                self.maximac[self.draggablec] = self.line2[0].get_xdata()[xindexc]
                 self.markersc.set_xdata(xdatac)
                 self.markersc.set_ydata(ydatac)
                 self.restore_region(self.backgroundc)
