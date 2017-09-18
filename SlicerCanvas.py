@@ -16,6 +16,7 @@ from scipy.signal import argrelextrema
 from matplotlib.animation import FuncAnimation
 
 
+
 class Update(object):
     def __init__(self, line, x):
         self.x = x
@@ -62,17 +63,27 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         self.markersc = None
         self.draggabler = None
         self.draggablec = None
+        self.Z_cut = self.Z
 
-        self.ax1 = self.figure.add_subplot(211, aspect='equal')
+        self.line4 = None
+
+        self.ax1 = self.figure.add_subplot(222, aspect='equal')
         self.ax2 = self.figure.add_subplot(223)
         self.ax3 = self.figure.add_subplot(224)
+        self.ax4 = self.figure.add_subplot(221, aspect='equal')
 
         self.lx = self.ax1.axhline(color='k')  # the horiz line
         self.ly = self.ax1.axvline(color='k')  # the vert line
         self.circle = plt.Circle(self.m, self.r, color='r', alpha=0.3)
+        self.rx = 0
+        self.ry = 0
+        self.rwidth = 20
+        self.rheight = 20
+        self.square = plt.Rectangle([self.rx,self.ry], self.rwidth, self.rheight)
         self.ax1.add_artist(self.circle)
         self.ax1.add_artist(self.lx)
         self.ax1.add_artist(self.ly)
+        self.ax4.add_artist(self.square)
 
         if self.Z is not None:
             self.replot()
@@ -81,9 +92,26 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
 
         #Connect
         self.mpl_connect('button_press_event', self.on_click)
+        self.mpl_connect('motion_notify_event', self.on_move_cut)
         self.mpl_connect('button_release_event', self.on_release)
         #self.mpl_disconnect(self.motionEvent)
         #self.mpl_disconnect(self.scrollEvent)
+
+
+    def on_move_cut(self, event):
+        if not event.inaxes:
+            return
+        xdata = event.xdata
+        ydata = event.ydata
+        self.square.set_visible(False)
+        self.square.set_x(xdata)
+        self.square.set_y(ydata)
+        self.draw()
+        self.background_cut = self.copy_from_bbox(self.ax4.bbox)
+        self.square.set_visible(True)
+        self.restore_region(self.background_cut)
+        self.update()
+
 
     def on_release(self, event):
         self.draggabler = None
@@ -233,16 +261,16 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
 
 
     def replot(self):
-        x = np.linspace(0, self.Z.shape[0], self.Z.shape[0])
-        y = np.linspace(0, self.Z.shape[1], self.Z.shape[1])
+        x = np.linspace(0, self.Z_cut.shape[0], self.Z_cut.shape[0])
+        y = np.linspace(0, self.Z_cut.shape[1], self.Z_cut.shape[1])
         self.X, self.Y = np.meshgrid(x, y)
         self.ax1.clear()
         self.ax2.clear()
         self.ax3.clear()
-        self.line1 = self.ax1.contourf(self.X, self.Y, self.Z, cmap=plt.cm.bone)
-        self.line2 = self.ax2.plot(np.linspace(0, self.Z.max(), self.Z.shape[0]))
-        self.line3 = self.ax3.plot(np.linspace(0, self.Z.max(), self.Z.shape[0]))
-        self.ax1.relim()
+        self.line4 = self.ax4.contourf(self.X, self.Y, self.Z_cut, cmap=plt.cm.bone)
+        self.line2 = self.ax2.plot(np.linspace(0, self.Z_cut.max(), self.Z_cut.shape[0]))
+        self.line3 = self.ax3.plot(np.linspace(0, self.Z_cut.max(), self.Z_cut.shape[0]))
+        self.ax4.relim()
         self.draw()
 
         self.motionEvent = self.mpl_connect('motion_notify_event', self.on_motion)
@@ -260,7 +288,7 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         self.disco = False
 
     def getData(self):
-        tmp = self.Z[self.startr:self.stopr, self.startc:self.stopc]
+        tmp = self.Z_cut[self.startr:self.stopr, self.startc:self.stopc]
         return tmp
 
     def on_spin(self, event):
@@ -346,6 +374,12 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
             self.ax1.draw_artist(self.lx)
             self.ax1.draw_artist(self.ly)
             self.ax1.draw_artist(self.circle)
+            #self.blit(self.ax1.bbox)
+            #self.blit(self.ax2.bbox)
+            #self.blit(self.ax3.bbox)
+            #self.blit(self.ax4.bbox)
+
+
 
 
 
@@ -354,9 +388,9 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         if startr < 0:
             startr = 0
         stopr = int(np.floor(self.m[0] + self.r))
-        if stopr > self.Z.shape[1]:
-            stopr = self.Z.shape[1]
-        self.rowplot = self.Z[int(np.floor(self.m[1])), startr:stopr]
+        if stopr > self.Z_cut.shape[1]:
+            stopr = self.Z_cut.shape[1]
+        self.rowplot = self.Z_cut[int(np.floor(self.m[1])), startr:stopr]
         self.startr = startr
         self.stopr = stopr
 
@@ -365,9 +399,9 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         if startc < 0:
             startc = 0
         stopc = int(np.floor(self.m[1] + self.r))
-        if stopc > self.Z.shape[0]:
-            stopc = self.Z.shape[0]
-        self.colplot = self.Z[int(np.floor(self.m[0])), startc:stopc]
+        if stopc > self.Z_cut.shape[0]:
+            stopc = self.Z_cut.shape[0]
+        self.colplot = self.Z_cut[int(np.floor(self.m[0])), startc:stopc]
         self.startc = startc
         self.stopc = stopc
 

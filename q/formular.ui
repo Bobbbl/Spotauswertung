@@ -48,6 +48,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="CutpushButton">
+          <property name="text">
+           <string>CUT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="addpushButton">
           <property name="text">
            <string>Set Data</string>

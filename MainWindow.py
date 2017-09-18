@@ -13,6 +13,7 @@ import scipy as sc
 import scipy.interpolate
 import pandas as pd
 import PyQt5.QtCore as QtCore
+import Cutter
 
 
 class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -35,6 +36,8 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.data_table_y = pd.DataFrame(columns=l)
 
 
+        #self.Z_cut = None
+
         #Connect
         self.ladenpushButton.pressed.connect(self.on_laden)
         self.width2Slider.valueChanged.connect(self.canvas.setFilterWidth2)
@@ -47,6 +50,16 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.order3Slider.valueChanged.connect(self.canvas.setFilterOrder3)
         self.addpushButton.pressed.connect(self.on_add)
         self.savepushButton.pressed.connect(self.on_save)
+        self.CutpushButton.pressed.connect(self.on_cut)
+        #self.canvas.auswahlGetroffen.connect(self.auswahlGetroffenSlot)
+
+    def auswahlGetroffenSlot(self):
+        cutter = Cutter.Cutter(self.canvas.Z, self.canvas)
+        #self.Z_cut = self.cutter.Z_cut
+
+    def on_cut(self):
+        self.cutter = Cutter.Cutter(self.Z, self.canvas)
+        self.cutter.show()
 
     def on_save(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Speichere Datensatz', '~/Dokumente/GitHub')
@@ -147,6 +160,7 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         Z[np.isnan(Z)] = 0
         Z = Z - Z.min()
         self.Z = Z
+        self.canvas.Z_cut = Z
         self.canvas.Z = Z
         self.canvas.replot()
 
