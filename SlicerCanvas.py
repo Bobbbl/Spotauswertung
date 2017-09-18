@@ -379,10 +379,6 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
             #self.blit(self.ax3.bbox)
             #self.blit(self.ax4.bbox)
 
-
-
-
-
     def readRowCircle(self):
         startr = int(np.floor(self.m[0] - self.r))
         if startr < 0:

@@ -37,9 +37,6 @@ class Cutter(FigureCanvasQTAgg):
 
         self.parentCanvas = parent
 
-
-
-
         self.mpl_connect('motion_notify_event', self.on_motion)
         self.mpl_connect('button_press_event', self.on_click)
         self.mpl_connect('scroll_event', self.on_spin)
@@ -63,7 +60,7 @@ class Cutter(FigureCanvasQTAgg):
             self.blit(self.ax.bbox)
 
     def readSquare(self):
-        Z = self.Z[int(self.m_x):int(self.m_x + self.square.get_width()), int(self.m_y):int(self.m_y + self.square.get_height())]
+        Z = self.Z[int(self.m_y):int(self.m_y + self.square.get_height()),int(self.m_x):int(self.m_x + self.square.get_width())]
         return Z
 
     def on_click(self, event):
@@ -74,7 +71,6 @@ class Cutter(FigureCanvasQTAgg):
             self.auswahlGetroffen.emit()
             self.parentCanvas.replot()
             self.parentCanvas.draw()
-            #self.parentCanvas.Z_cut = self.Z_cut
 
 
     def on_spin(self, event):
