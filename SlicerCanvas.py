@@ -65,12 +65,9 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         self.draggablec = None
         self.Z_cut = self.Z
 
-        self.line4 = None
-
-        self.ax1 = self.figure.add_subplot(222, aspect='equal')
+        self.ax1 = self.figure.add_subplot(211, aspect='equal')
         self.ax2 = self.figure.add_subplot(223)
         self.ax3 = self.figure.add_subplot(224)
-        self.ax4 = self.figure.add_subplot(221, aspect='equal')
 
         self.lx = self.ax1.axhline(color='k')  # the horiz line
         self.ly = self.ax1.axvline(color='k')  # the vert line
@@ -83,7 +80,6 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         self.ax1.add_artist(self.circle)
         self.ax1.add_artist(self.lx)
         self.ax1.add_artist(self.ly)
-        self.ax4.add_artist(self.square)
 
         if self.Z is not None:
             self.replot()
@@ -92,26 +88,9 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
 
         #Connect
         self.mpl_connect('button_press_event', self.on_click)
-        self.mpl_connect('motion_notify_event', self.on_move_cut)
         self.mpl_connect('button_release_event', self.on_release)
         #self.mpl_disconnect(self.motionEvent)
         #self.mpl_disconnect(self.scrollEvent)
-
-
-    def on_move_cut(self, event):
-        if not event.inaxes:
-            return
-        xdata = event.xdata
-        ydata = event.ydata
-        self.square.set_visible(False)
-        self.square.set_x(xdata)
-        self.square.set_y(ydata)
-        self.draw()
-        self.background_cut = self.copy_from_bbox(self.ax4.bbox)
-        self.square.set_visible(True)
-        self.restore_region(self.background_cut)
-        self.update()
-
 
     def on_release(self, event):
         self.draggabler = None
@@ -267,10 +246,10 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         self.ax1.clear()
         self.ax2.clear()
         self.ax3.clear()
-        self.line4 = self.ax4.contourf(self.X, self.Y, self.Z_cut, cmap=plt.cm.bone)
+        self.line1 = self.ax1.contourf(self.X, self.Y, self.Z_cut, cmap=plt.cm.bone)
         self.line2 = self.ax2.plot(np.linspace(0, self.Z_cut.max(), self.Z_cut.shape[0]))
         self.line3 = self.ax3.plot(np.linspace(0, self.Z_cut.max(), self.Z_cut.shape[0]))
-        self.ax4.relim()
+        self.ax1.relim()
         self.draw()
 
         self.motionEvent = self.mpl_connect('motion_notify_event', self.on_motion)

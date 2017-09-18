@@ -58,6 +58,10 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #self.Z_cut = self.cutter.Z_cut
 
     def on_cut(self):
+        self.canvas.markersr.remove()
+        self.canvas.markersc.remove()
+        self.canvas.markersr = None
+        self.canvas.markersc = None
         self.cutter = Cutter.Cutter(self.Z, self.canvas)
         self.cutter.show()
 
