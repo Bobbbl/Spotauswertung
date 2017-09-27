@@ -21,7 +21,7 @@ class Cutter(FigureCanvasQTAgg):
         self.m_y = 10
         self.heightr = 10
         self.widthr = 10
-        self.square = plt.Rectangle([self.m_x, self.m_y], self.widthr, self.heightr)
+        self.square = plt.Rectangle([self.m_x, self.m_y], self.widthr, self.heightr, alpha=0.5)
         self.ax.add_artist(self.square)
 
         self.Z = Z
