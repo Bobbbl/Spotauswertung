@@ -19,8 +19,8 @@ class Cutter(FigureCanvasQTAgg):
         self.ax = self.fig.add_subplot(111, aspect='equal')
         self.m_x = 10
         self.m_y = 10
-        self.heightr = 10
-        self.widthr = 10
+        self.heightr = 150
+        self.widthr = 150
         self.square = plt.Rectangle([self.m_x, self.m_y], self.widthr, self.heightr, alpha=0.5)
         self.ax.add_artist(self.square)
 
