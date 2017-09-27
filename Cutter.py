@@ -31,7 +31,7 @@ class Cutter(FigureCanvasQTAgg):
         y = np.linspace(0, self.Z.shape[1], self.Z.shape[1])
         self.X, self.Y = np.meshgrid(x, y)
         self.ax.clear()
-        self.line1 = self.ax.contourf(self.X, self.Y, self.Z, cmap=plt.cm.bone)
+        self.line1 = self.ax.contourf(self.X, self.Y, self.Z, cmap=plt.cm.gnuplot)
         self.ax.relim()
         self.draw()
 
