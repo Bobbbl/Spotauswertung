@@ -1,4 +1,6 @@
 import sys, os
+import matplotlib
+matplotlib.use('Qt5Agg')
 from PyQt5 import QtWidgets
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -30,10 +32,16 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.fig = Figure()
         #Setup Canvas
         self.setupCanvas()
+        self.pixelsize = None
         # List
-        l = ('Schnitt', 'Linker Rand', 'Linker Graben', 'Mitte', 'Rechter Graben', 'Rechter Rand')
+        l = ('Schnitt Y', 'Linker Rand X','Linker Rand Y', 'Linker Graben X', 'Linker Graben Y',
+             'Mitte X', 'Mitte Y',  'Rechter Graben X', 'Rechter Graben Y', 'Rechter Rand X', 'Rechter Rand Y')
+        l_p = ('Schnitt Y', 'Linker Rand X', 'Linker Rand Y', 'Linker Graben X', 'Linker Graben Y',
+             'Mitte X', 'Mitte Y', 'Rechter Graben X', 'Rechter Graben Y', 'Rechter Rand X', 'Rechter Rand Y', 'Pixelgröße')
         self.data_table_x = pd.DataFrame(columns=l)
         self.data_table_y = pd.DataFrame(columns=l)
+        self.data_table_x_pix = pd.DataFrame(columns=l_p)
+        self.data_table_y_pix = pd.DataFrame(columns=l_p)
 
 
         #self.Z_cut = None
@@ -58,10 +66,6 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #self.Z_cut = self.cutter.Z_cut
 
     def on_cut(self):
-        self.canvas.markersr.remove()
-        self.canvas.markersc.remove()
-        self.canvas.markersr = None
-        self.canvas.markersc = None
         self.cutter = Cutter.Cutter(self.Z, self.canvas)
         self.cutter.show()
 
@@ -71,19 +75,43 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         ew = pd.ExcelWriter(fname[0]+'.xlsx')
         self.data_table_x.to_excel(ew, 'X Schnitt')
         self.data_table_y.to_excel(ew, 'Y Schnitt')
+        self.data_table_x_pix.to_excel(ew, 'X Schnitt Realgrö0e')
+        self.data_table_y_pix.to_excel(ew, 'Y Schnitt Realgrö0e')
         ew.save()
         ew.close()
 
     def on_add(self):
         xschnitt = self.canvas.rowplot
         yschnitt = self.canvas.colplot
-        la, lg, m, rg, rr = self.canvas.maximar[0],self.canvas.maximar[1],self.canvas.maximar[2],self.canvas.maximar[3],self.canvas.maximar[4]
-        data = [xschnitt, la, lg, m, rg, rr]
+        lax, lgx, mx, rgx, rrx, lay, lgy, my, rgy, rry = self.canvas.maximar[0],self.canvas.maximar[1],\
+                                                         self.canvas.maximar[2],self.canvas.maximar[3],self.canvas.maximar[4],\
+        self.canvas.rowplot[self.canvas.maximar[0]], self.canvas.rowplot[self.canvas.maximar[1]], self.canvas.rowplot[self.canvas.maximar[2]], \
+                                                         self.canvas.rowplot[self.canvas.maximar[3]], self.canvas.rowplot[self.canvas.maximar[4]]
+
+        data = [xschnitt, lax, lay, lgx, lgy, mx, my, rgx, rgy, rrx, rry]
         self.data_table_x.loc[len(self.data_table_x)] = data
-        la, lg, m, rg, rr = self.canvas.maximac[0], self.canvas.maximac[1], self.canvas.maximac[2], self.canvas.maximac[3], self.canvas.maximac[4]
-        data = [yschnitt, la, lg, m, rg, rr]
+        # ##
+        data = [xschnitt, lax * self.pixelsize, lay, lgx * self.pixelsize, lgy, mx * self.pixelsize, my,
+                       rgx * self.pixelsize, rgy, rrx * self.pixelsize, rry, self.pixelsize]
+        self.data_table_x_pix.loc[len(self.data_table_x_pix)] = data
+        # ##
+        lax, lgx, mx, rgx, rrx, lay, lgy, my, rgy, rry = self.canvas.maximac[0], self.canvas.maximac[1], \
+                                                         self.canvas.maximac[2], self.canvas.maximac[3], \
+                                                         self.canvas.maximac[4], \
+                                                         self.canvas.colplot[self.canvas.maximac[0]], \
+                                                         self.canvas.colplot[self.canvas.maximac[1]], \
+                                                         self.canvas.colplot[self.canvas.maximac[2]], \
+                                                         self.canvas.colplot[self.canvas.maximac[3]], \
+                                                         self.canvas.colplot[self.canvas.maximac[4]]
+        data = [yschnitt, lax, lay,lgx, lgy, mx, my, rgx, rgy, rrx, rry]
         self.data_table_y.loc[len(self.data_table_y)] = data
-        print(self.data_table_x)
+        # By Pixel
+        # X
+        data = [yschnitt, lax*self.pixelsize, lay, lgx*self.pixelsize, lgy, mx*self.pixelsize, my, rgx*self.pixelsize, rgy, rrx*self.pixelsize, rry, self.pixelsize]
+        self.data_table_y_pix.loc[len(self.data_table_y_pix)] = data
+
+        # Debug
+        print(self.data_table_x_pix)
 
 
     def updateLW2(self, m):
@@ -121,7 +149,7 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Öffne Datei', '/home/sebastian/Dokumente/GitH/Spotauswertung/Spotauswertung')
         searchfile = None
-
+        # TODO: Dringend muss noch die Pixelgröße ausgelesen werden
         if fname[0]:
             searchfile = open(fname[0], "r")
         else:
@@ -133,8 +161,14 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         linenumber = 0
         headerend = None
         fileend = None
+
         for line in searchfile:
             linenumber += 1
+
+            if linenumber == 8:
+                tmp = line.split(' ')
+                self.pixelsize = float(tmp[7-1])
+
             if line.find('#') is not -1 and headerend is None:
                 headerend = linenumber
 
@@ -147,7 +181,7 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
         rdata = pd.read_table(fname[0], header=headerend, nrows=fileend - headerend - 2, sep="\s+")
         del rdata[rdata.columns[-1]]
         rdata.columns = ["X", "Y", "Z"]
-        rdata = rdata.replace(to_replace={"Z" : {"No" : 0}})
+        rdata = rdata.replace(to_replace={"Z" : {"No" : np.NaN}})
         rdata = rdata.convert_objects(convert_numeric=True)
 
         x = rdata["X"].as_matrix()
@@ -160,9 +194,9 @@ class mainwindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         Z = sc.interpolate.griddata((x.flatten(), y.flatten()), z.flatten(), (X, Y),
                                     method='nearest')  # flatten wird benutzt, um daraus ein 1D-Array zu machen
-        Z = np.abs(Z)
-        Z[np.isnan(Z)] = 0
-        Z = Z - Z.min()
+        #Z = np.abs(Z)
+        #Z[np.isnan(Z)] = 0
+        #Z = Z - Z.min()
         self.Z = Z
         self.canvas.Z_cut = Z
         self.canvas.Z = Z

@@ -38,6 +38,8 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         self.backgroundc = None
         self.backgroundr = None
         self.draggable = None
+        self.rowplot = None
+        self.colplot = None
 
         self.Z = Z
         self.disco = False
@@ -243,6 +245,12 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         x = np.linspace(0, self.Z_cut.shape[0], self.Z_cut.shape[0])
         y = np.linspace(0, self.Z_cut.shape[1], self.Z_cut.shape[1])
         self.X, self.Y = np.meshgrid(x, y)
+        if self.markersr is not None:
+            self.markersr.remove()
+            self.markersr = None
+        if self.markersc is not None:
+            self.markersc.remove()
+            self.markersc = None
         self.ax1.clear()
         self.ax2.clear()
         self.ax3.clear()

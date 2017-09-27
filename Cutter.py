@@ -36,6 +36,10 @@ class Cutter(FigureCanvasQTAgg):
         self.draw()
 
         self.parentCanvas = parent
+        #self.parentCanvas.plotRow(self.parentCanvas.rowplot)
+        #self.parentCanvas.plotCol(self.parentCanvas.colplot)
+        self.parentCanvas.markersr = None
+        self.parentCanvas.markersc = None
 
         self.mpl_connect('motion_notify_event', self.on_motion)
         self.mpl_connect('button_press_event', self.on_click)
