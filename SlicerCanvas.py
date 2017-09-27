@@ -254,7 +254,7 @@ class SlicerFigureCanvas(FigureCanvasQTAgg):
         self.ax1.clear()
         self.ax2.clear()
         self.ax3.clear()
-        self.line1 = self.ax1.contourf(self.X, self.Y, self.Z_cut, cmap=plt.cm.bone)
+        self.line1 = self.ax1.contourf(self.X, self.Y, self.Z_cut, cmap=plt.cm.gnuplot)
         self.line2 = self.ax2.plot(np.linspace(0, self.Z_cut.max(), self.Z_cut.shape[0]))
         self.line3 = self.ax3.plot(np.linspace(0, self.Z_cut.max(), self.Z_cut.shape[0]))
         self.ax1.relim()
