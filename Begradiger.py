@@ -17,16 +17,20 @@ matplotlib.use('Qt5Agg')
 class Begradiger(QtWidgets.QWidget, Ui_Form):
 
     def __init__(self):
-        self.canvas = None
+        self.canvasx = None
         self.fig = None
         super().__init__()
         self.setupUi(self)
 
 
         # Setup Canvas
-        self.canvas = GeradenpunkteCanvas()
-        self.Container.addWidget(self.canvas)
-        self.canvas.draw()
+        self.canvasx = GeradenpunkteCanvas()
+        self.Containerx.addWidget(self.canvasx)
+        self.canvasx.draw()
+        #
+        self.canvasy = GeradenpunkteCanvas()
+        self.Containery.addWidget(self.canvasy)
+        self.canvasy.draw()
 
         # Connect
         self.pushButtonLaden.pressed.connect(self.laden)
@@ -72,7 +76,11 @@ class Begradiger(QtWidgets.QWidget, Ui_Form):
         x = self.extractXfS(self.currentSpotx)
         y = self.extractYfS(self.currentSpotx)
         px = self.extractPixelsizefS(self.currentSpotx)
-        self.canvas.plot(x,y)
+        self.canvasx.plot(x,y)
+        x = self.extractXfS(self.currentSpoty)
+        y = self.extractYfS(self.currentSpoty)
+        px = self.extractPixelsizefS(self.currentSpoty)
+        self.canvasy.plot(x,y)
 
     def extractXfS(self, spot):
         return [spot[1], spot[3], spot[5], spot[7],spot[9]]
